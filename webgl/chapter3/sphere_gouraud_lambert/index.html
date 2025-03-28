@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+      integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+      crossorigin="anonymous"
+    ></script>
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+      attribute vec3 aVertexNormal;
+
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+      uniform mat4 uNMatrix;
+
+      uniform vec3 uLightDirection;   //light direction
+      uniform vec4 uLightDiffuse;     //light color
+      uniform vec4 uMaterialDiffuse;  //object color
+
+      varying vec4 vFinalColor;
+
+      void main(void) {
+       //Transformed normal position
+       vec3 N = normalize(vec3(uNMatrix * vec4(aVertexNormal, 1.0)));
+
+       //Normalize light to calculate lambertTerm
+       vec3 L = normalize(uLightDirection);
+
+       //Lambert's cosine law
+       float lambertTerm = dot(N,-L);
+
+       //Final Color
+       vec4 Id = uMaterialDiffuse * uLightDiffuse * lambertTerm;
+       vFinalColor = Id;
+       vFinalColor.a = 1.0;
+
+        //Transformed vertex position
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+      }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+      #ifdef GL_ES
+      precision highp float;
+      #endif
+
+      varying vec4  vFinalColor;
+
+      void main(void)  {
+       gl_FragColor = vFinalColor;
+      }
+    </script>
+  </head>
+  <body>
+    <canvas
+      id="canvas-element-id"
+      width="480"
+      height="400"
+      style="background: 1px solid black"
+    >
+      Your browser does not support the HTML5 canvas element.
+    </canvas>
+
+    <script src="./index.js" type="module"></script>
+  </body>
+</html>
